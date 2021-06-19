@@ -20,14 +20,14 @@ function huffman() {
       kolejnoscWystapien.push(textToCheck[i]);
     }
   }
-  for (i = 0; i < kolejnoscWystapien.length; i++) {
+  for (i = 0; i < kolejnoscWystapien.length; i++) {             //sprawdzanie jakie znaki występują w tekscie
     let count = 0;
     let position = textToCheck.indexOf(kolejnoscWystapien[i]);
-    while (position !== -1) {
+    while (position !== -1) {                                   //zliczanie wystapien znaku
       count++
       position = textToCheck.indexOf(kolejnoscWystapien[i], position + 1)
     }
-    if (count > 0) {
+    if (count > 0) {                                            //stworzenie obiektow litera
       tablicaZnakow[i] = new Litera(kolejnoscWystapien[i], count, null);
       tablicaZnakow = tablicaZnakow.filter(item => item);
     }
@@ -38,30 +38,31 @@ function huffman() {
 
   while (tablicaZnakow.length > 1) {
 
-    tablicaZnakow[0].kod = "0";
-    tablicaZnakow[1].kod = "1";
+    tablicaZnakow[0].kod = "0";                                 //przypisanie 0 lewej krawedzi
+    tablicaZnakow[1].kod = "1";                                 //przypisanie 1 prawej krawedzi
 
-    let temp = new Litera(tablicaZnakow[0].znak + tablicaZnakow[1].znak, tablicaZnakow[0].ilosc + tablicaZnakow[1].ilosc, null);
+    let temp = new Litera(tablicaZnakow[0].znak + tablicaZnakow[1].znak, tablicaZnakow[0].ilosc + tablicaZnakow[1].ilosc, null);//nowy wezel
 
-    nowaTablicaZnakow.push(tablicaZnakow.shift());
-    nowaTablicaZnakow.push(tablicaZnakow.shift());
-    tablicaZnakow.length = tablicaZnakow.push(temp);
-    tablicaZnakow.sort(compareNumbers);
+    nowaTablicaZnakow.push(tablicaZnakow.shift());              //przeniesienie obektu litera (to tez wezly)  o najmniejszej ilosci do nowej tablicy
+    nowaTablicaZnakow.push(tablicaZnakow.shift());              //przeniesienie obektu litera (to tez wezly)  o najmniejszej ilosci do nowej tablicy
+    tablicaZnakow.length = tablicaZnakow.push(temp);            //aktualizacja dlugosci tablicy
+    tablicaZnakow.sort(compareNumbers);                         //sortowanie
   }
-  nowaTablicaZnakow = nowaTablicaZnakow.concat(tablicaZnakow);
-  nowaTablicaZnakow.sort(compareNumbers);
+
+  nowaTablicaZnakow = nowaTablicaZnakow.concat(tablicaZnakow);  //połączenie tablic obiektów
+  nowaTablicaZnakow.sort(compareNumbers);                       //sortowanie nowej tablicy obiektów
 
   //tworzenie kodów wezłów i liter
-  for (j = 0; j < nowaTablicaZnakow.length - 1; j++) {
-    for (i = j+1; i < nowaTablicaZnakow.length - 1; i++) {
-      if (nowaTablicaZnakow[j].znak == '\.') {
+  for (j = 0; j < nowaTablicaZnakow.length - 1; j++) {          //petla po tablicy z literami i wezlami
+    for (i = j + 1; i < nowaTablicaZnakow.length - 1; i++) {      //sprawdzanie wystepowania danej litery w wezle
+      if (nowaTablicaZnakow[j].znak == '\.') {                  //warunek sprawdzajacy kropke, jest to znak specjalny
         if (nowaTablicaZnakow[i].znak.match(/\./g, '\.')) {
           nowaTablicaZnakow[j].kod += nowaTablicaZnakow[i].kod;
         }
       }
       else {
         if (nowaTablicaZnakow[i].znak.match(nowaTablicaZnakow[j].znak)) {
-          nowaTablicaZnakow[j].kod += nowaTablicaZnakow[i].kod;
+          nowaTablicaZnakow[j].kod += nowaTablicaZnakow[i].kod;   //tworzenie kodu liter i wezlow
         }
       }
     }
@@ -90,7 +91,8 @@ function huffman() {
   //wypisanie kodowania
   document.getElementById("code").value = WypisanieKodu(nowaTablicaZnakow, textToCheck);
 
-  console.log(nowaTablicaZnakow);
+  document.getElementById("entropia").value = (EntropiaSrednia(nowaTablicaZnakow, textToCheck));
+
 }
 
 //funkcja porownujaca
@@ -103,9 +105,10 @@ function WypisanieKodu(nowaTablicaZnakow, textToCheck) {
 
   for (i = 0; i < nowaTablicaZnakow.length; i++) {
     if (nowaTablicaZnakow[i].znak.length == 1) {
-      if (nowaTablicaZnakow[i].znak == ' ') { nowaTablicaZnakow[i].znak = "spacja"; }
-      if (nowaTablicaZnakow[i].znak == '\n') { nowaTablicaZnakow[i].znak = "enter"; }
-      tablica[i] = nowaTablicaZnakow[i].znak + " => " + nowaTablicaZnakow[i].kod + " \tp = " + (nowaTablicaZnakow[i].ilosc/textToCheck.length*100).toFixed(2) +"%";
+      tablica[i] = nowaTablicaZnakow[i].znak;
+      if (tablica[i] == ' ') { tablica[i] = "spacja"; }
+      if (tablica[i] == '\n') { tablica[i] = "enter"; }
+      tablica[i] += " => " + nowaTablicaZnakow[i].kod + " \tp = " + (nowaTablicaZnakow[i].ilosc / textToCheck.length * 100).toFixed(2) + "%";
       tablica = tablica.filter(item => item);
     }
   }
@@ -116,4 +119,21 @@ function WypisanieKodu(nowaTablicaZnakow, textToCheck) {
 function Wyczysc() {
   document.getElementById("textToCheck").value = "";
   huffman();
+}
+
+function EntropiaSrednia(nowaTablicaZnakow, textToCheck) {
+  let entropia = 0;
+  let srednia = 0;
+  let temp;
+
+  for (let i = 0; i < nowaTablicaZnakow.length; i++) {
+
+    if (nowaTablicaZnakow[i].znak.length == 1) {
+      temp = nowaTablicaZnakow[i].ilosc / textToCheck.length;
+      entropia = entropia + temp * Math.log2(1 / temp);
+      srednia = srednia + nowaTablicaZnakow[i].ilosc / textToCheck.length * nowaTablicaZnakow[i].kod.length;
+    }
+  }
+  temp = "Entrpia = "+entropia+'\n'+"Srednia ="+srednia;
+  return temp;
 }

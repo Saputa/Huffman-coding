@@ -37,4 +37,5 @@ button{
     background-color: darkkhaki;
     color: azure;
     font-size: large;
+    cursor: pointer;
 }
